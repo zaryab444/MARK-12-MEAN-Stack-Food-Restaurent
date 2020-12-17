@@ -10,8 +10,8 @@ const leadersSchema = new Schema({
 
     image: {
         type: String,
-        required: false
-    },
+        required: true,
+      },
     designation: {
         type: String,
         required: true,

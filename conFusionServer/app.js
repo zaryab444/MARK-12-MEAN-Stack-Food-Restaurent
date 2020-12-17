@@ -17,6 +17,8 @@ var usersRouter = require('./routes/users');
 var dishouter = require('./routes/dishRouter');
 var leaderRouter = require('./routes/leaders');
 var promotionsRouter = require('./routes/promotionsrouter');
+const uploadRouter = require('./routes/uploadRouter');
+const prodrouter = require('./routes/product');
 const mongoose  = require ('mongoose');
 const Dishes = require('./models/dishes');
 const Promotions = require('./models/promotions');
@@ -39,7 +41,7 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-//app.use(cookieParser('12345-67890-09876-54321'));
+app.use(cookieParser('12345-67890-09876-54321'));
 
 
 
@@ -49,11 +51,15 @@ app.use(passport.initialize());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'pulic')));
+
 
 app.use('/dishes',dishouter);
 app.use('/promotions', promotionsRouter);
 app.use('/leader', leaderRouter);
+app.use('/imageUpload',uploadRouter);
+app.use('/product', prodrouter);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
