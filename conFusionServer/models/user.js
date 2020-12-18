@@ -11,6 +11,10 @@ var User = new Schema({
         type: String,
           default: ''
       },
+      image: {
+        type: String,
+        required: true,
+      },
     admin:   {
         type: Boolean,
         default: false

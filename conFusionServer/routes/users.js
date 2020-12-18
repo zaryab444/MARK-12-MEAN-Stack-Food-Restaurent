@@ -10,6 +10,35 @@ var authenticate = require('../authenticate');
 const cors = require('./cors');
 const multer = require('multer');
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/images');
+    },
+
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+  // reject a file
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  },
+  fileFilter: fileFilter
+});
+
+
+
 router.use(bodyParser.json());
 
 /* GET users listing. */
@@ -23,9 +52,9 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
   .catch((err) => next(err));
 });
 
-router.post('/signup', cors.corsWithOptions, (req, res, next) => {
-  User.register(new User({username: req.body.username}), 
-    req.body.password, (err, user) => {
+router.post('/signup', cors.corsWithOptions, upload.single('image'), (req, res, next) => {
+  User.register(new User({username: req.body.username,  image: req.file.path}), 
+    req.body.password,(err, user) => {
     if(err) {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -52,6 +81,12 @@ router.post('/signup', cors.corsWithOptions, (req, res, next) => {
     }
   });
 });
+
+
+
+
+
+
 
 router.post('/login',cors.corsWithOptions, passport.authenticate('local'), (req, res) => {  
   var token = authenticate.getToken({_id: req.user._id});

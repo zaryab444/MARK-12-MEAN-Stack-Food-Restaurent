@@ -6,6 +6,37 @@ const Dishes = require('../models/dishes');
 const authenticate = require('../authenticate');
 
 const cors = require('./cors');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/images');
+    },
+
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+  // reject a file
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  },
+  fileFilter: fileFilter
+});
+
+
+ //const upload = multer({ storage: storage, fileFilter: imageFileFilter});
 const dishRouter = express.Router();
 
 dishRouter.use(bodyParser.json());
@@ -23,16 +54,49 @@ dishRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Dishes.create(req.body)
-    .then((dish) => {
-        console.log('Dish Created ', dish);
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(dish);
-    }, (err) => next(err))
-    .catch((err) => next(err));
+// .post(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+//     Dishes.create(req.body)
+//     .then((dish) => {
+//         console.log('Dish Created ', dish);
+//         res.statusCode = 200;
+//         res.setHeader('Content-Type', 'application/json');
+//         res.json(dish);
+//     }, (err) => next(err))
+//     .catch((err) => next(err));
+// })
+
+
+.post(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, upload.single('image'),(req, res, next) => {
+    const dish = new Dishes({
+    name: req.body.name,
+    description: req.body.description,
+    image: req.file.path, 
+    category: req.body.category,
+    label: req.body.label,
+    price: req.body.price,
+  });
+  dish
+    .save()
+
+  .then((dish) => {
+      console.log('Promotion Created ', dish);
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(dish);
+      
+  }, (err) => next(err))
+  .catch((err) => next(err));
 })
+
+
+
+
+
+
+
+
+
+
 .put(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /dishes');
