@@ -11,6 +11,8 @@ var User = new Schema({
         type: String,
           default: ''
       },
+      facebookId: String,
+
       image: {
         type: String,
         required: true,
